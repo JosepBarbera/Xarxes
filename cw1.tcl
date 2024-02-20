@@ -140,7 +140,7 @@ $ns at 0.0 "record"
 $ns connect $tcp1 $null1 
 
 # Stop simulation at  20 s.
-$ns at 20.0 "finish"
+$ns at 200.0 "finish"
 
 
 #Run simulation

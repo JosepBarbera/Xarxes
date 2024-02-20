@@ -4,7 +4,7 @@ if {$argc == 1} {
     puts "      CBR0-UDP n0"
     puts "                \\"
     puts "                 n2 ---- n3"
-    puts "                /"
+    puts "                //"
     puts "      CBR1-TCP n1 "
     puts ""
     puts "  Usage: ns $argv0 (0: RFC793 with slow start, 1: Reno) "
