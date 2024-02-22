@@ -88,10 +88,12 @@ set udp0 [new Agent/UDP]
 $udp0 set packetSize_ 200
 $ns attach-agent $n0 $udp0
 
+# Exponential traffic generator for UDP: 50Kbps
 set cbr0 [new Application/Traffic/Exponential]
 $cbr0 set rate_ 50 Kbps
 $cbr0 attach-agent $udp0
 
+# CBR traffic generator for UDP: 50Kbps
 set cbr1 [new Application/Traffic/CBR]
 $cbr1 set rate_ 50 Kbps
 $cbr1 attach-agent $udp0
@@ -102,17 +104,15 @@ set null0 [new Agent/Null]
 $ns attach-agent $n3 $null0
 
 
-
+# UDP Traffic activates 20s after starting and ending before simulation
 $ns connect $udp0 $null0
 $ns at 20.0 "$cbr0 start"
-$ns at 20.0 "$cbr0 stop"
+$ns at 180.0 "$cbr0 stop"
 
 # Modify congention control procedures (slow start and linial increasing)
 # Modify CWMAX (window_)
-
 set tcp1 [new Agent/TCP/RFC793edu]
 $tcp1 set class_ 1
-$tcp1 
 $tcp1 set add793karnrtt_ true
 $tcp1 set add793expbackoff_ true
 if {$flag==1} {
@@ -122,8 +122,11 @@ if {$flag==1} {
 }
 
 $ns attach-agent $n1 $tcp1
+# Time Resolution: 0.01s
 $tcp1 set tcpTick_ 0.01
-$tcp1 set window_ 40
+
+# CWMAX: 10 MSS
+$tcp1 set window_ 10 
 
 
 set null1 [new Agent/TCPSink]
@@ -139,7 +142,7 @@ $ns at 0.0 "record"
 
 $ns connect $tcp1 $null1 
 
-# Stop simulation at  20 s.
+# Stop simulation at  200 s.
 $ns at 200.0 "finish"
 
 
