@@ -1,6 +1,5 @@
 if {$argc == 1} {
     set flag  [lindex $argv 0] 
-
 } else {
     puts "      CBR0-UDP n0"
     puts "                \\"
@@ -8,7 +7,7 @@ if {$argc == 1} {
     puts "                /"
     puts "      CBR1-TCP n1 "
     puts ""
-    puts "  Usage: ns $argv0 (0: original, 1: incr lineal, 2: slow start) "
+    puts "  Usage: ns $argv0 (0: RFC793 with slow start, 1: Reno) "
     puts ""
     exit 1
 }
@@ -79,34 +78,41 @@ set n2 [$ns node]
 set n3 [$ns node]
 
 #Duplex lines between nodes
-$ns duplex-link $n0 $n2 5Mb 20ms DropTail
-$ns duplex-link $n1 $n2 5Mb 20ms DropTail
-$ns duplex-link $n2 $n3 1Mb 50ms DropTail
+$ns duplex-link $n0 $n2 250 Kbps 20ms DropTail
+$ns duplex-link $n1 $n2 250 Kbps 20ms DropTail
+$ns duplex-link $n2 $n3 50 Kbps 500ms DropTail
 
 
 # Node 0:  UDP agent with Exponential  traffic generator
 set udp0 [new Agent/UDP]
+$udp0 set packetSize_ 200
 $ns attach-agent $n0 $udp0
+
+# Exponential traffic generator for UDP: 50Kbps
 set cbr0 [new Application/Traffic/Exponential]
-$cbr0 set rate_ 0.5Mbps
+$cbr0 set rate_ 50 Kbps
 $cbr0 attach-agent $udp0
+
+# CBR traffic generator for UDP: 50Kbps
+set cbr1 [new Application/Traffic/CBR]
+$cbr1 set rate_ 50 Kbps
+$cbr1 attach-agent $udp0
+
 $udp0 set class_ 0
 
 set null0 [new Agent/Null]
 $ns attach-agent $n3 $null0
 
 
-
+# UDP Traffic activates 20s after starting and ending before simulation
 $ns connect $udp0 $null0
-$ns at 5.0 "$cbr0 start"
-$ns at 15.0 "$cbr0 stop"
+$ns at 20.0 "$cbr0 start"
+$ns at 180.0 "$cbr0 stop"
 
 # Modify congention control procedures (slow start and linial increasing)
 # Modify CWMAX (window_)
-
 set tcp1 [new Agent/TCP/RFC793edu]
 $tcp1 set class_ 1
-
 $tcp1 set add793karnrtt_ true
 $tcp1 set add793expbackoff_ true
 if {$flag==1} {
@@ -116,8 +122,11 @@ if {$flag==1} {
 }
 
 $ns attach-agent $n1 $tcp1
+# Time Resolution: 0.01s
 $tcp1 set tcpTick_ 0.01
-$tcp1 set window_ 40
+
+# CWMAX: 10 MSS
+$tcp1 set window_ 10 
 
 
 set null1 [new Agent/TCPSink]
@@ -133,8 +142,8 @@ $ns at 0.0 "record"
 
 $ns connect $tcp1 $null1 
 
-# Stop simulation at  20 s.
-$ns at 20.0 "finish"
+# Stop simulation at  200 s.
+$ns at 200.0 "finish"
 
 
 #Run simulation
