@@ -18,8 +18,16 @@ class WFQScheduler:
     def schedule_packets(self, packets):
         for packet in packets:
             heappush(self.queue, (packet.arrival_time, packet))
-
+        
         while self.queue:
+
+            # arrival_time = temps arribada = A sub i 
+            # packet = longitud = S sub i
+            # flow = r sub j =(bandwidth_fraction / 100)
+            # F prima = temps de finalització del paquet actual
+            
+            # F sub i = max (F prima i A sub i) + S sub i * r sub j
+
             arrival_time, packet = heappop(self.queue)
             self.current_time = max(self.current_time, arrival_time)
 
@@ -45,6 +53,12 @@ class WFQScheduler:
                   f"Transmission Start Time: {self.current_time - time_taken}, "
                   f"Transmission End Time: {self.current_time}, "
                   f"Time taken: {time_taken}")
+
+
+
+
+
+
 
 def main(bandwidth_fractions, filename):
     packets = []
