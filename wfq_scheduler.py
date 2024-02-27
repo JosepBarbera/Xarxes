@@ -1,5 +1,5 @@
 from heapq import heappop, heappush
-
+import heapq
 class Packet:
     def __init__(self, arrival_time, packet_length, flow_id):
         self.arrival_time = arrival_time
@@ -16,35 +16,38 @@ class WFQScheduler:
         self.total_packets_processed = 0
 
     def schedule_packets(self, packets):
-        for packet in packets:
-            heappush(self.queue, (packet.arrival_time, packet))
 
-        while self.queue:
-            arrival_time, packet = heappop(self.queue)
-            self.current_time = max(self.current_time, arrival_time)
+        time = 0.0
+        transmission_order = []
+        first_packet = True
+        first_arrival_time = 0.0
+        while packets:
+            next_transmission = None
+            for packet in packets:
 
-            flow_id = packet.flow_id
-            packet_length = packet.packet_length
-            bandwidth_fraction = self.bandwidth_fractions[flow_id - 1]
+                priority_time = max(time, packet.arrival_time) + packet.packet_length / self.bandwidth_fractions[packet.flow_id - 1]
 
-            if flow_id not in self.flow_counters:
-                self.flow_counters[flow_id] = 0
-                self.time_per_flow[flow_id] = 0
+                if first_packet:
+                    first_arrival_time = packet.arrival_time
+                    next_transmission = (priority_time, packet)
+                    first_packet = False
 
-            # Calculate the time taken to transmit the packet based on bandwidth fraction
-            time_taken = packet_length / (bandwidth_fraction / 100)
-            self.time_per_flow[flow_id] += time_taken
+                if (next_transmission is None or priority_time < next_transmission[0]) or (first_arrival_time > packet.arrival_time and priority_time < next_transmission[0]):
+                    first_arrival_time = packet.arrival_time
+                    next_transmission = (priority_time, packet)
 
-            # Update current time
-            self.current_time += time_taken
-            self.flow_counters[flow_id] += 1
-            self.total_packets_processed += 1
+            if next_transmission is None:
+                break
 
-            print(f"Packet {self.total_packets_processed}: Flow {flow_id}, "
-                  f"Arrival Time: {packet.arrival_time}, "
-                  f"Transmission Start Time: {self.current_time - time_taken}, "
-                  f"Transmission End Time: {self.current_time}, "
-                  f"Time taken: {time_taken}")
+            priority_time, packet = next_transmission
+            packets.remove(packet)
+            transmission_order.append(packet)
+            time = priority_time
+             
+            print(str(packet.arrival_time) + " " + str(packet.packet_length) + " " + str(packet.flow_id))
+        print (transmission_order)
+
+        
 
 def main(bandwidth_fractions, filename):
     packets = []
