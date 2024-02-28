@@ -25,7 +25,7 @@ class WFQScheduler:
             next_transmission = None
             for packet in packets:
 
-                priority_time = max(time, packet.arrival_time) + packet.packet_length / self.bandwidth_fractions[packet.flow_id - 1]
+                priority_time = max(time, packet.arrival_time) + packet.packet_length / (self.bandwidth_fractions[packet.flow_id - 1] / 100)
 
                 if first_packet:
                     first_arrival_time = packet.arrival_time
@@ -44,7 +44,7 @@ class WFQScheduler:
             transmission_order.append(packet)
             time = priority_time
              
-            print(str(packet.arrival_time) + " " + str(packet.packet_length) + " " + str(packet.flow_id))
+            print(str(packet.arrival_time) + " " + str(packet.packet_length) + " " + str(packet.flow_id) + " Tiempo: " + str(time))
         print (transmission_order)
 
         
