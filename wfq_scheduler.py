@@ -21,6 +21,7 @@ class WFQScheduler:
         transmission_order = []
         first_packet = True
         first_arrival_time = 0.0
+        first_iteration = True
         while packets:
             next_transmission = None
             for packet in packets:
@@ -28,17 +29,23 @@ class WFQScheduler:
                 priority_time = max(time, packet.arrival_time) + packet.packet_length / (self.bandwidth_fractions[packet.flow_id - 1] / 100)
 
                 if first_packet:
+
                     first_arrival_time = packet.arrival_time
                     next_transmission = (priority_time, packet)
                     first_packet = False
 
-                if (next_transmission is None or priority_time < next_transmission[0]) or (first_arrival_time > packet.arrival_time and priority_time < next_transmission[0]):
+                if ((next_transmission is None or priority_time < next_transmission[0]) or (first_arrival_time > packet.arrival_time and priority_time < next_transmission[0])) and not first_iteration:
                     first_arrival_time = packet.arrival_time
                     next_transmission = (priority_time, packet)
+                elif((next_transmission is None or priority_time < next_transmission[0]) and first_arrival_time == packet.arrival_time  and first_iteration):
+                    first_arrival_time = packet.arrival_time
+                    next_transmission = (priority_time, packet)
+
 
             if next_transmission is None:
                 break
 
+            first_iteration = False
             priority_time, packet = next_transmission
             packets.remove(packet)
             transmission_order.append(packet)
