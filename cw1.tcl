@@ -78,9 +78,9 @@ set n2 [$ns node]
 set n3 [$ns node]
 
 #Duplex lines between nodes
-$ns duplex-link $n0 $n2 250 Kbps 20ms DropTail
-$ns duplex-link $n1 $n2 250 Kbps 20ms DropTail
-$ns duplex-link $n2 $n3 50 Kbps 500ms DropTail
+$ns duplex-link $n0 $n2 0.25 Mb 20ms DropTail
+$ns duplex-link $n1 $n2 0.25 Mb 20ms DropTail
+$ns duplex-link $n2 $n3 0.50 Mb 500ms DropTail
 
 
 # Node 0:  UDP agent with Exponential  traffic generator

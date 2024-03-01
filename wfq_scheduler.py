@@ -1,10 +1,12 @@
 from heapq import heappop, heappush
 import heapq
+from struct import pack
 class Packet:
     def __init__(self, arrival_time, packet_length, flow_id):
         self.arrival_time = arrival_time
         self.packet_length = packet_length
         self.flow_id = flow_id
+        self.priority_time = 0.0
 
 class WFQScheduler:
     def __init__(self, bandwidth_fractions):
@@ -22,26 +24,36 @@ class WFQScheduler:
         first_packet = True
         first_arrival_time = 0.0
         first_iteration = True
+        arrived_packet = {}
+        priority_time = 0.0
+        nextPacket = None
         while packets:
             next_transmission = None
+
             for packet in packets:
 
-                priority_time = max(time, packet.arrival_time) + packet.packet_length / (self.bandwidth_fractions[packet.flow_id - 1] / 100)
+                if packet not in arrived_packet and (next_transmission is None or packet.arrival_time <= next_transmission[0]) and  (nextPacket is None or packet.arrival_time < nextPacket):
+                    packet.priority_time = max(time, packet.arrival_time) + packet.packet_length / (self.bandwidth_fractions[packet.flow_id - 1] / 100)
+
+                    arrived_packet[packet] = True
 
                 if first_packet:
-
                     first_arrival_time = packet.arrival_time
-                    next_transmission = (priority_time, packet)
+                    next_transmission = (packet.priority_time, packet)
                     first_packet = False
 
-                if ((next_transmission is None or priority_time < next_transmission[0]) or (first_arrival_time > packet.arrival_time and priority_time < next_transmission[0])) and not first_iteration:
+                if ((next_transmission is None or packet.priority_time < next_transmission[0]) or (first_arrival_time >= packet.arrival_time and packet.priority_time < next_transmission[0])) and not first_iteration and packet.priority_time > 0:
                     first_arrival_time = packet.arrival_time
-                    next_transmission = (priority_time, packet)
-                elif((next_transmission is None or priority_time < next_transmission[0]) and first_arrival_time == packet.arrival_time  and first_iteration):
+                    next_transmission = (packet.priority_time, packet)
+                    print(packet.arrival_time)
+                    print(packet.priority_time)
+                   
+                elif((next_transmission is None or packet.priority_time < next_transmission[0]) and first_arrival_time == packet.arrival_time  and first_iteration):
                     first_arrival_time = packet.arrival_time
-                    next_transmission = (priority_time, packet)
+                    next_transmission = (packet.priority_time, packet)
 
 
+            #hacer otro while para meter a la cola los paquetes que llegan mientras se ejecuta el otro
             if next_transmission is None:
                 break
 
@@ -50,8 +62,13 @@ class WFQScheduler:
             packets.remove(packet)
             transmission_order.append(packet)
             time = priority_time
-             
-            print(str(packet.arrival_time) + " " + str(packet.packet_length) + " " + str(packet.flow_id) + " Tiempo: " + str(time))
+
+            print(str(packet.arrival_time) + " " + str(packet.packet_length) + " " + str(packet.flow_id) + " Tiempo: " + str(packet.priority_time))
+            nextPacket = None
+            for packet in packets:
+                if packet in arrived_packet and  (nextPacket is None or packet.priority_time < nextPacket):
+                    nextPacket = packet.priority_time
+            print(nextPacket)
         print (transmission_order)
 
         
