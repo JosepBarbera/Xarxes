@@ -15,7 +15,7 @@ def parse_trace_file(trace_file):
                     time.append(float(fields[1]))
                     cw_values.append(int(fields[12]))
                     rto_values.append(float(fields[15]))
-    
+                    print('time=' + fields[1] + 'cw=' + fields[12] + 'rto=' + fields[15])
     return time, cw_values, rto_values
 
 # Function to plot congestion window and timeout
@@ -32,7 +32,7 @@ def plot_cw_and_rto(time, cw_values, rto_values):
 
 # Main function
 def main():
-    trace_file = 'simulation_trace.tr'  # Path to the simulation trace file
+    trace_file = 'trace_file_rfc793.res'  # Path to the simulation trace file
     time, cw_values, rto_values = parse_trace_file(trace_file)
     plot_cw_and_rto(time, cw_values, rto_values)
 
