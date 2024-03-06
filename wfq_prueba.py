@@ -30,11 +30,12 @@ class WFQScheduler:
         print(self.time)
     
     def check_queue(self):
+        already_sended_packet = self.packet_to_send
         next_to_send_time = self.packet_to_send.priority_time
         first_packet = True
         for packet in self.packets:
 
-            if packet not in self.arrived_packet and packet.arrival_time <= next_to_send_time:
+            if packet not in self.arrived_packet and packet.arrival_time <= next_to_send_time:#self.time
                 if first_packet:
                     first_packet = False
                     self.packet_to_send = packet
@@ -48,6 +49,12 @@ class WFQScheduler:
                     self.packet_to_send = packet
                 if self.packet_to_send.priority_time > packet.priority_time:
                     self.packet_to_send = packet
+
+        #POR SI NO HA LLEGADO NINGÚN PAQUETE ANTES DE QUE FINALICE
+        if already_sended_packet == self.packet_to_send:
+            self.packets[0].priority_time = max(self.time, packet.arrival_time) + packet.packet_length / (self.bandwidth_fractions[packet.flow_id - 1] / 100)
+            self.packet_to_send = self.packets[0]
+
 
     def schedule_packets(self, packets):
 
