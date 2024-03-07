@@ -107,7 +107,7 @@ $ns at 180.0 "$cbr0 stop"
 # Modify congention control procedures (slow start and linial increasing)
 # Modify CWMAX (window_)
 
-set tcp1 [new Agent/TCP/RFC793edu]
+set tcp1 [new Agent/TCP/Newreno]
 $tcp1 set class_ 1
 $tcp1 set packetSize_ 1000
 $tcp1 set add793karnrtt_ true

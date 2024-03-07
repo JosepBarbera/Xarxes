@@ -23,15 +23,14 @@ class WFQScheduler:
         self.transmission_order = []
         self.arrived_packet = {}
         self.time = 0.0
+        self.p = 0.0
 
     def send_packet(self):
         self.packets.remove(self.packet_to_send)
         self.transmission_order.append(self.packet_to_send)
         self.time += self.packet_to_send.packet_length
-
+        self.p = self.packet_to_send.priority_time
         print(self.packet_to_send.id)
-        #print(self.time)
-        print(self.packet_to_send.priority_time)
 
         
     
@@ -45,7 +44,7 @@ class WFQScheduler:
                 if first_packet:
                     first_packet = False
                     self.packet_to_send = packet
-                packet.priority_time = (max(self.time, packet.arrival_time) + packet.packet_length) * (self.bandwidth_fractions[packet.flow_id - 1] )
+                packet.priority_time = max(self.p, packet.arrival_time) + packet.packet_length * (1 / (self.bandwidth_fractions[packet.flow_id - 1] / 100 ))
                 self.arrived_packet[packet] = True
                 if self.packet_to_send.priority_time > packet.priority_time:
                     self.packet_to_send = packet
@@ -58,7 +57,7 @@ class WFQScheduler:
 
         #POR SI NO HA LLEGADO NINGÚN PAQUETE ANTES DE QUE FINALICE
         if already_sended_packet == self.packet_to_send:
-            self.packets[0].priority_time = (max(self.time, packet.arrival_time) + packet.packet_length) * (self.bandwidth_fractions[packet.flow_id - 1] )
+            self.packets[0].priority_time = max(self.p, packet.arrival_time) + packet.packet_length * (1 / (self.bandwidth_fractions[packet.flow_id - 1] / 100 ))
             self.packet_to_send = self.packets[0]
 
 
@@ -75,18 +74,15 @@ class WFQScheduler:
                 first_packet = False
                 self.packet_to_send = packet
             if first_packet_arrival == packet.arrival_time:
-                packet.priority_time = (max(self.time, packet.arrival_time) + packet.packet_length) * (self.bandwidth_fractions[packet.flow_id - 1] )
-                print(str(packet.packet_length) + " " + str(self.bandwidth_fractions[packet.flow_id - 1] / 100))
-                print(packet.priority_time)
-                print("cdd")
-                #self.arrived_packet[packet] = True
+                packet.priority_time = max(self.p, packet.arrival_time) + packet.packet_length * (1 / (self.bandwidth_fractions[packet.flow_id - 1] / 100 ))
+                self.arrived_packet[packet] = True
                 if self.packet_to_send is None or self.packet_to_send.priority_time > packet.priority_time:
                     self.packet_to_send = packet
 
         #print(str(self.packet_to_send.packet_length) + " " + str(self.packet_to_send.priority_time))
         ##ENVIAR PRIMER PAQUETE
         self.send_packet()
-        self.arrived_packet[self.packet_to_send] = True
+
         while self.packets:
             ##COMPROBAMOS SI HAY PAQUETES QUE HAN ENTRADO MIENTRAS SE ENVIABA EL PRIMER PAQUETE Y LOS AÑADIMOS COMO SIGUIENTES A ENVIAR
 
@@ -94,57 +90,6 @@ class WFQScheduler:
 
             #print(str(self.packet_to_send.arrival_time) + " " + str(self.packet_to_send.priority_time))
             self.send_packet()
-
-        # transmission_order = []
-        
-        # first_arrival_time = 0.0
-        # first_iteration = True
-        # arrived_packet = {}
-        # priority_time = 0.0
-        # nextPacket = None
-        # while packets:
-        #     next_transmission = None
-
-        #     for packet in packets:
-
-        #         if packet not in arrived_packet and (next_transmission is None or packet.arrival_time <= next_transmission[0]) and  (nextPacket is None or packet.arrival_time < nextPacket):
-        #             packet.priority_time = max(time, packet.arrival_time) + packet.packet_length / (self.bandwidth_fractions[packet.flow_id - 1] / 100)
-
-        #             arrived_packet[packet] = True
-
-        #         if first_packet:
-        #             first_arrival_time = packet.arrival_time
-        #             next_transmission = (packet.priority_time, packet)
-        #             first_packet = False
-
-        #         if ((next_transmission is None or packet.priority_time < next_transmission[0]) or (first_arrival_time >= packet.arrival_time and packet.priority_time < next_transmission[0])) and not first_iteration and packet.priority_time > 0:
-        #             first_arrival_time = packet.arrival_time
-        #             next_transmission = (packet.priority_time, packet)
-        #             print(packet.arrival_time)
-        #             print(packet.priority_time)
-                   
-        #         elif((next_transmission is None or packet.priority_time < next_transmission[0]) and first_arrival_time == packet.arrival_time  and first_iteration):
-        #             first_arrival_time = packet.arrival_time
-        #             next_transmission = (packet.priority_time, packet)
-
-
-        #     #hacer otro while para meter a la cola los paquetes que llegan mientras se ejecuta el otro
-        #     if next_transmission is None:
-        #         break
-
-        #     first_iteration = False
-        #     priority_time, packet = next_transmission
-        #     packets.remove(packet)
-        #     transmission_order.append(packet)
-        #     time = priority_time
-
-        #     print(str(packet.arrival_time) + " " + str(packet.packet_length) + " " + str(packet.flow_id) + " Tiempo: " + str(packet.priority_time))
-        #     nextPacket = None
-        #     for packet in packets:
-        #         if packet in arrived_packet and  (nextPacket is None or packet.priority_time < nextPacket):
-        #             nextPacket = packet.priority_time
-        #     print(nextPacket)
-        # print (transmission_order)
 
 
 
