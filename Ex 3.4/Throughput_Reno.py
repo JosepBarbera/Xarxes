@@ -14,7 +14,7 @@ def calculate_throughput(trace_file):
     return throughput
 
 # Usage
-trace_file = "trace_file_reno.res"
+trace_file = "trace_file_reno.linc"
 throughput = calculate_throughput(trace_file)
 
 print("Throughput:", str(throughput), "bps")
