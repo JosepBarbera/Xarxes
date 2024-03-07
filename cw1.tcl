@@ -78,10 +78,11 @@ set n2 [$ns node]
 set n3 [$ns node]
 
 #Duplex lines between nodes
-$ns duplex-link $n0 $n2 0.25 Mb 20ms DropTail
-$ns duplex-link $n1 $n2 0.25 Mb 20ms DropTail
-$ns duplex-link $n2 $n3 0.50 Mb 500ms DropTail
+$ns duplex-link $n0 $n2 0.25Mb 20ms DropTail
+$ns duplex-link $n1 $n2 0.25Mb 20ms DropTail
+$ns duplex-link $n2 $n3 0.50Mb 500ms DropTail
 
+$ns queue-limit $n1 $n2 20
 
 # Node 0:  UDP agent with Exponential  traffic generator
 set udp0 [new Agent/UDP]
@@ -92,11 +93,6 @@ $ns attach-agent $n0 $udp0
 set cbr0 [new Application/Traffic/Exponential]
 $cbr0 set rate_ 50 Kbps
 $cbr0 attach-agent $udp0
-
-# CBR traffic generator for UDP: 50Kbps
-set cbr1 [new Application/Traffic/CBR]
-$cbr1 set rate_ 50 Kbps
-$cbr1 attach-agent $udp0
 
 $udp0 set class_ 0
 
@@ -135,8 +131,9 @@ $ns attach-agent $n3 $null1
 
 # Add a  CBR  traffic generator
 set cbr1 [new Application/Traffic/CBR]
-$cbr1 set rate_ 0.5Mbps
+$cbr1 set rate_ 50 Kbps
 $cbr1 attach-agent $tcp1
+
 $ns at 0.0 "$cbr1 start"
 $ns at 0.0 "record"
 
