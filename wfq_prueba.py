@@ -26,8 +26,10 @@ class WFQScheduler:
     def send_packet(self):
         self.packets.remove(self.packet_to_send)
         self.transmission_order.append(self.packet_to_send)
-        self.time += self.packet_to_send.priority_time
+        self.time += self.packet_to_send.packet_length
         print(self.time)
+
+        
     
     def check_queue(self):
         already_sended_packet = self.packet_to_send
@@ -74,7 +76,7 @@ class WFQScheduler:
                 if self.packet_to_send is None or self.packet_to_send.priority_time > packet.priority_time:
                     self.packet_to_send = packet
 
-        print(str(self.packet_to_send.packet_length) + " " + str(self.packet_to_send.priority_time))
+        #print(str(self.packet_to_send.packet_length) + " " + str(self.packet_to_send.priority_time))
         ##ENVIAR PRIMER PAQUETE
         self.send_packet()
         while self.packets:
@@ -82,7 +84,7 @@ class WFQScheduler:
 
             self.check_queue()
 
-            print(str(self.packet_to_send.arrival_time) + " " + str(self.packet_to_send.priority_time))
+            #print(str(self.packet_to_send.arrival_time) + " " + str(self.packet_to_send.priority_time))
             self.send_packet()
 
         # transmission_order = []

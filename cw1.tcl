@@ -82,11 +82,12 @@ $ns duplex-link $n0 $n2 0.25Mb 20ms DropTail
 $ns duplex-link $n1 $n2 0.25Mb 20ms DropTail
 $ns duplex-link $n2 $n3 0.50Mb 500ms DropTail
 
-$ns queue-limit $n1 $n2 20
+$ns duplex-link $n2 $n3
+set cua[[$ns link $n2 $n3] queue]
+$cua set limit_ 20
 
 # Node 0:  UDP agent with Exponential  traffic generator
 set udp0 [new Agent/UDP]
-$udp0 set packetSize_ 200
 $ns attach-agent $n0 $udp0
 
 # Exponential traffic generator for UDP: 50Kbps
@@ -108,6 +109,7 @@ $ns at 180.0 "$cbr0 stop"
 # Modify congention control procedures (slow start and linial increasing)
 # Modify CWMAX (window_)
 set tcp1 [new Agent/TCP/RFC793edu]
+$tcp1 set packetSize_ 1000
 $tcp1 set class_ 1
 $tcp1 set add793karnrtt_ true
 $tcp1 set add793expbackoff_ true
