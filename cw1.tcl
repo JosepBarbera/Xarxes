@@ -81,7 +81,7 @@ set n3 [$ns node]
 #Duplex lines between nodes
 $ns duplex-link $n0 $n2 250Kbps 20ms DropTail
 $ns duplex-link $n1 $n2 250Kbps 20ms DropTail
-$ns duplex-link $n2 $n3 500Kbps 50ms DropTail
+$ns duplex-link $n2 $n3 50Kbps 500ms DropTail
 
 
 # Node 0:  UDP agent with Exponential  traffic generator
@@ -93,10 +93,7 @@ $cbr0 set rate_ 50Kbps
 $cbr0 attach-agent $udp0
 $udp0 set class_ 0
 
-$ns duplex-link $n2 $n3
-set cua[[$ns link $n2 $n3] queue]
-$cua set limit_ 20
-
+$ns set queue-limit $n2 $n3
 
 set null0 [new Agent/Null]
 $ns attach-agent $n3 $null0
