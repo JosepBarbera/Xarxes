@@ -11,7 +11,7 @@ def find_fast_retransmission(trace_file):
             # Check if the line represents an ACK received by node 1
             if fields[0] == 'r' and fields[3] == '1' and fields[4] == 'ack':
                 # Extract ACK information
-                ack_info = (fields[2],fields[3], fields[10])  # Source, destination, sequence number
+                ack_info = (fields[10])  # Source, destination, sequence number
 
                 # Check if the ACK is a duplicate acknowledgment (dupack)
                 if last_ack_info == ack_info:
@@ -23,7 +23,7 @@ def find_fast_retransmission(trace_file):
                 last_ack_info = ack_info
 
                 # Check if we have received three consecutive dupacks
-                if dupack_count >= 3:
+                if dupack_count > 3:
                     fast_retransmissions.append(line.strip())  # Store the line
 
     return fast_retransmissions
