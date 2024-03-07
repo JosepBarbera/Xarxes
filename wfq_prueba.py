@@ -2,11 +2,12 @@ from heapq import heappop, heappush
 import heapq
 from struct import pack
 class Packet:
-    def __init__(self, arrival_time, packet_length, flow_id):
+    def __init__(self, arrival_time, packet_length, flow_id, id):
         self.arrival_time = arrival_time
         self.packet_length = packet_length
         self.flow_id = flow_id
         self.priority_time = 0.0
+        self.id = id
 
 class WFQScheduler:
     def __init__(self, bandwidth_fractions):
@@ -17,7 +18,7 @@ class WFQScheduler:
         self.time_per_flow = {}
         self.total_packets_processed = 0
 
-        self.packet_to_send = Packet(0,0,0)
+        self.packet_to_send = Packet(0,0,0,0)
         self.packets = []
         self.transmission_order = []
         self.arrived_packet = {}
@@ -27,13 +28,16 @@ class WFQScheduler:
         self.packets.remove(self.packet_to_send)
         self.transmission_order.append(self.packet_to_send)
         self.time += self.packet_to_send.packet_length
-        print(self.time)
+
+        print(self.packet_to_send.id)
+        #print(self.time)
+        print(self.packet_to_send.priority_time)
 
         
     
     def check_queue(self):
         already_sended_packet = self.packet_to_send
-        next_to_send_time = self.packet_to_send.priority_time
+        next_to_send_time = self.time
         first_packet = True
         for packet in self.packets:
 
@@ -41,7 +45,7 @@ class WFQScheduler:
                 if first_packet:
                     first_packet = False
                     self.packet_to_send = packet
-                packet.priority_time = max(self.time, packet.arrival_time) + packet.packet_length / (self.bandwidth_fractions[packet.flow_id - 1] / 100)
+                packet.priority_time = (max(self.time, packet.arrival_time) + packet.packet_length) * (self.bandwidth_fractions[packet.flow_id - 1] )
                 self.arrived_packet[packet] = True
                 if self.packet_to_send.priority_time > packet.priority_time:
                     self.packet_to_send = packet
@@ -54,7 +58,7 @@ class WFQScheduler:
 
         #POR SI NO HA LLEGADO NINGÚN PAQUETE ANTES DE QUE FINALICE
         if already_sended_packet == self.packet_to_send:
-            self.packets[0].priority_time = max(self.time, packet.arrival_time) + packet.packet_length / (self.bandwidth_fractions[packet.flow_id - 1] / 100)
+            self.packets[0].priority_time = (max(self.time, packet.arrival_time) + packet.packet_length) * (self.bandwidth_fractions[packet.flow_id - 1] )
             self.packet_to_send = self.packets[0]
 
 
@@ -71,14 +75,18 @@ class WFQScheduler:
                 first_packet = False
                 self.packet_to_send = packet
             if first_packet_arrival == packet.arrival_time:
-                packet.priority_time = max(time, packet.arrival_time) + packet.packet_length / (self.bandwidth_fractions[packet.flow_id - 1] / 100)
-                self.arrived_packet[packet] = True
+                packet.priority_time = (max(self.time, packet.arrival_time) + packet.packet_length) * (self.bandwidth_fractions[packet.flow_id - 1] )
+                print(str(packet.packet_length) + " " + str(self.bandwidth_fractions[packet.flow_id - 1] / 100))
+                print(packet.priority_time)
+                print("cdd")
+                #self.arrived_packet[packet] = True
                 if self.packet_to_send is None or self.packet_to_send.priority_time > packet.priority_time:
                     self.packet_to_send = packet
 
         #print(str(self.packet_to_send.packet_length) + " " + str(self.packet_to_send.priority_time))
         ##ENVIAR PRIMER PAQUETE
         self.send_packet()
+        self.arrived_packet[self.packet_to_send] = True
         while self.packets:
             ##COMPROBAMOS SI HAY PAQUETES QUE HAN ENTRADO MIENTRAS SE ENVIABA EL PRIMER PAQUETE Y LOS AÑADIMOS COMO SIGUIENTES A ENVIAR
 
@@ -142,10 +150,12 @@ class WFQScheduler:
 
 def main(bandwidth_fractions, filename):
     packets = []
+    i = 0
     with open(filename, 'r') as file:
         for line in file:
+            i +=1
             arrival_time, packet_length, flow_id = map(float, line.split())
-            packets.append(Packet(arrival_time, packet_length, int(flow_id)))
+            packets.append(Packet(arrival_time, packet_length, int(flow_id), i))
 
     scheduler = WFQScheduler(bandwidth_fractions)
     scheduler.schedule_packets(packets)

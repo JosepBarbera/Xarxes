@@ -93,7 +93,6 @@ $cbr0 set rate_ 50Kbps
 $cbr0 attach-agent $udp0
 $udp0 set class_ 0
 
-$ns duplex-link $n2 $n3
 set cua[[$ns link $n2 $n3] queue]
 $cua set limit_ 20
 
