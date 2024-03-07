@@ -1,5 +1,6 @@
 if {$argc == 1} {
     set flag  [lindex $argv 0] 
+
 } else {
     puts "      CBR0-UDP n0"
     puts "                \\"
@@ -7,7 +8,7 @@ if {$argc == 1} {
     puts "                /"
     puts "      CBR1-TCP n1 "
     puts ""
-    puts "  Usage: ns $argv0 (0: RFC793 with slow start, 1: Reno) "
+    puts "  Usage: ns $argv0 (0: original, 1: incr lineal, 2: slow start) "
     puts ""
     exit 1
 }
@@ -78,39 +79,40 @@ set n2 [$ns node]
 set n3 [$ns node]
 
 #Duplex lines between nodes
-$ns duplex-link $n0 $n2 0.25Mb 20ms DropTail
-$ns duplex-link $n1 $n2 0.25Mb 20ms DropTail
-$ns duplex-link $n2 $n3 0.50Mb 500ms DropTail
+$ns duplex-link $n0 $n2 250Kbps 20ms DropTail
+$ns duplex-link $n1 $n2 250Kbps 20ms DropTail
+$ns duplex-link $n2 $n3 500Kbps 50ms DropTail
 
-$ns duplex-link $n2 $n3
-set cua[[$ns link $n2 $n3] queue]
-$cua set limit_ 20
 
 # Node 0:  UDP agent with Exponential  traffic generator
 set udp0 [new Agent/UDP]
 $ns attach-agent $n0 $udp0
 
-# Exponential traffic generator for UDP: 50Kbps
 set cbr0 [new Application/Traffic/Exponential]
-$cbr0 set rate_ 50 Kbps
+$cbr0 set rate_ 50Kbps
 $cbr0 attach-agent $udp0
-
 $udp0 set class_ 0
+
+$ns duplex-link $n2 $n3
+set cua[[$ns link $n2 $n3] queue]
+$cua set limit_ 20
+
 
 set null0 [new Agent/Null]
 $ns attach-agent $n3 $null0
 
 
-# UDP Traffic activates 20s after starting and ending before simulation
+
 $ns connect $udp0 $null0
 $ns at 20.0 "$cbr0 start"
 $ns at 180.0 "$cbr0 stop"
 
 # Modify congention control procedures (slow start and linial increasing)
 # Modify CWMAX (window_)
+
 set tcp1 [new Agent/TCP/RFC793edu]
-$tcp1 set packetSize_ 1000
 $tcp1 set class_ 1
+$tcp1 set packetSize_ 1000
 $tcp1 set add793karnrtt_ true
 $tcp1 set add793expbackoff_ true
 if {$flag==1} {
@@ -120,11 +122,8 @@ if {$flag==1} {
 }
 
 $ns attach-agent $n1 $tcp1
-# Time Resolution: 0.01s
 $tcp1 set tcpTick_ 0.01
-
-# CWMAX: 10 MSS
-$tcp1 set window_ 10 
+$tcp1 set window_ 10
 
 
 set null1 [new Agent/TCPSink]
@@ -133,15 +132,14 @@ $ns attach-agent $n3 $null1
 
 # Add a  CBR  traffic generator
 set cbr1 [new Application/Traffic/CBR]
-$cbr1 set rate_ 50 Kbps
+$cbr1 set rate_ 50Kbps
 $cbr1 attach-agent $tcp1
-
 $ns at 0.0 "$cbr1 start"
 $ns at 0.0 "record"
 
 $ns connect $tcp1 $null1 
 
-# Stop simulation at  200 s.
+# Stop simulation at  20 s.
 $ns at 200.0 "finish"
 
 
