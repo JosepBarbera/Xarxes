@@ -91,7 +91,7 @@ $cua set queu-in-bytes_ false
 $cua set thresh_ 10
 $cua set maxthresh_ 20
 $cua set q_weight_ 0.5
-$cua set wait_ true
+$cua set wait_ false
 $cua set linterm_ 50
 
 # Node 0:  UDP agent with Exponential  traffic generator
