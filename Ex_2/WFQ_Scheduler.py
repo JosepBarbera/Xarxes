@@ -30,7 +30,7 @@ class WFQScheduler:
         self.transmission_order.append(self.packet_to_send)
         self.time += self.packet_to_send.packet_length
         self.p = self.packet_to_send.priority_time
-        print(self.packet_to_send.id)
+        #print(self.packet_to_send.id)
 
         
     
@@ -79,7 +79,6 @@ class WFQScheduler:
                 if self.packet_to_send is None or self.packet_to_send.priority_time > packet.priority_time:
                     self.packet_to_send = packet
 
-        #print(str(self.packet_to_send.packet_length) + " " + str(self.packet_to_send.priority_time))
         ##ENVIAR PRIMER PAQUETE
         self.send_packet()
 
@@ -88,9 +87,9 @@ class WFQScheduler:
 
             self.check_queue()
 
-            #print(str(self.packet_to_send.arrival_time) + " " + str(self.packet_to_send.priority_time))
             self.send_packet()
-
+            
+        return self.transmission_order
 
 
 def main(bandwidth_fractions, filename):
@@ -103,7 +102,10 @@ def main(bandwidth_fractions, filename):
             packets.append(Packet(arrival_time, packet_length, int(flow_id), i))
 
     scheduler = WFQScheduler(bandwidth_fractions)
-    scheduler.schedule_packets(packets)
+    transmission_order = scheduler.schedule_packets(packets)
+    for packet in transmission_order:
+        print("Packet id: " + str(packet.id) +" Arrival time: " + str(packet.arrival_time) + " Packet length: " + str(packet.packet_length)+ " Flow id: " + str(packet.flow_id)+ " Priority_time: " + str(packet.priority_time))
+
 
 if __name__ == "__main__":
     import sys
